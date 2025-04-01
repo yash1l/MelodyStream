@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/Sidebar";
 import MiniPlayer from "@/components/MiniPlayer";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import Home from "@/pages/Home";
 import Library from "@/pages/Library";
 import Search from "@/pages/Search";
@@ -15,9 +16,10 @@ import { useMusicContext } from "@/context/MusicContext";
 
 function Router() {
   return (
-    <div className="flex h-screen bg-background-dark text-text-primary">
+    <div className="flex h-screen bg-background text-foreground">
       <Sidebar />
-      <div className="flex-1 ml-[70px] pb-20 overflow-y-auto">
+      <div className="flex-1 ml-[80px] pb-20 overflow-y-auto px-4">
+        <ThemeToggle />
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/library" component={Library} />
@@ -38,7 +40,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {isLoaded ? <Router /> : <div className="h-screen w-screen flex items-center justify-center bg-background-dark text-white">Loading...</div>}
+      {isLoaded ? <Router /> : <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground">Loading...</div>}
       <Toaster />
     </QueryClientProvider>
   );

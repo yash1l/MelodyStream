@@ -8,7 +8,12 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground transition-colors duration-300;
+  }
+  
+  /* Theme switcher styles */
+  .theme-toggle {
+    @apply fixed top-4 right-4 z-50;
   }
 
   /* Rainbow Theme Elements */

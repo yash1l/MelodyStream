@@ -13,7 +13,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="sidebar bg-background-darker fixed h-full z-20 w-[70px] hover:w-[240px] overflow-hidden transition-all duration-300 group">
+    <aside className="sidebar bg-background-darker fixed h-full z-20 w-[70px] hover:w-[240px] overflow-hidden transition-all duration-300 group border-r border-border/30">
       <div className="h-full flex flex-col pt-5 px-3">
         <div className="flex items-center mb-8 pl-2">
           <i className="ri-music-fill text-primary text-2xl group-hover:scale-110 transition-transform"></i>
