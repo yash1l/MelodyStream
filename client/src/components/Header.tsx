@@ -54,7 +54,7 @@ export default function Header() {
             <input 
               type="text" 
               placeholder="Search songs, artists, albums..." 
-              className="bg-background-lighter rounded-full pl-10 pr-4 py-2 w-80 focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+              className="bg-background-lighter rounded-full pl-10 pr-4 py-2 w-80 focus:outline-none focus:ring-1 focus:ring-primary text-sm search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

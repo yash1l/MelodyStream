@@ -61,9 +61,22 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         setPlaylists(playlistsData);
         
         // Fetch liked songs
-        const likedResponse = await fetch('/api/playlists/liked');
-        const likedData = await likedResponse.json();
-        setLikedSongs(likedData.songs || []);
+        try {
+          const likedResponse = await fetch('/api/liked');
+          const likedData = await likedResponse.json();
+          setLikedSongs(likedData.songs || []);
+        } catch (error) {
+          console.error("Failed to load liked songs:", error);
+          // Fallback to old endpoint for backward compatibility
+          try {
+            const likedResponse = await fetch('/api/playlists/liked');
+            const likedData = await likedResponse.json();
+            setLikedSongs(likedData.songs || []);
+          } catch (fallbackError) {
+            console.error("Failed to load liked songs (fallback):", fallbackError);
+            setLikedSongs([]);
+          }
+        }
         
         // Fetch artists
         const artistsResponse = await fetch('/api/artists');

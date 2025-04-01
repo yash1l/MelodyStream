@@ -145,7 +145,7 @@ export default function Profile() {
                     
                     <div className="pt-4 border-t border-accent/20">
                       <h4 className="font-medium mb-2">Language</h4>
-                      <select className="w-full bg-background-lighter rounded p-2 text-sm">
+                      <select className="w-full bg-background-lighter rounded p-2 text-sm language-select">
                         <option>English</option>
                         <option>Spanish</option>
                         <option>French</option>
@@ -196,7 +196,7 @@ export default function Profile() {
                     
                     <div className="pt-4 border-t border-accent/20">
                       <h4 className="font-medium mb-2">Audio Quality</h4>
-                      <select className="w-full bg-background-lighter rounded p-2 text-sm">
+                      <select className="w-full bg-background-lighter rounded p-2 text-sm language-select">
                         <option>Normal (128kbps)</option>
                         <option>High (256kbps)</option>
                         <option>Very High (320kbps)</option>

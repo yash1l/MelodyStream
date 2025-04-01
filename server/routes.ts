@@ -119,10 +119,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Liked songs endpoints
+  app.get("/api/liked", async (req, res) => {
+    // For demo purposes, use user ID 1
+    const userId = 1;
+    const songs = await storage.getLikedSongs(userId);
+    res.setHeader("Content-Type", "application/json");
+    res.json({ id: "liked", name: "Liked Songs", songs });
+  });
+  
+  // Add the route as a fallback for backward compatibility
   app.get("/api/playlists/liked", async (req, res) => {
     // For demo purposes, use user ID 1
     const userId = 1;
     const songs = await storage.getLikedSongs(userId);
+    res.setHeader("Content-Type", "application/json");
     res.json({ id: "liked", name: "Liked Songs", songs });
   });
   

@@ -17,7 +17,7 @@ export default function Sidebar() {
       <div className="h-full flex flex-col pt-5 px-3">
         <div className="flex items-center mb-8 pl-2">
           <i className="ri-music-fill text-primary text-2xl"></i>
-          <h1 className="sidebar-text text-xl font-bold ml-3 text-primary opacity-0 transition-opacity">Melodify</h1>
+          <h1 className="sidebar-text text-xl font-bold ml-3 rainbow-text opacity-0 transition-opacity">Melodify</h1>
         </div>
         
         <nav>

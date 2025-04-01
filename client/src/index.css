@@ -10,4 +10,58 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* Rainbow Theme Elements */
+  .sidebar-text {
+    @apply group-hover:opacity-100;
+  }
+
+  .rainbow-gradient {
+    background: linear-gradient(
+      90deg, 
+      #ff5e62, 
+      #ff9966, 
+      #ffcc33, 
+      #00ff99, 
+      #0099ff, 
+      #9900ff
+    );
+  }
+
+  /* Override search input text */
+  .search-input {
+    @apply text-black;
+  }
+
+  /* Override language dropdown */
+  .language-select {
+    @apply text-black;
+  }
+
+  /* Rainbow text for branding */
+  .rainbow-text {
+    background-image: linear-gradient(
+      to right, 
+      #ff5e62, 
+      #ff9966, 
+      #ffcc33, 
+      #00ff99, 
+      #0099ff, 
+      #9900ff
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-size: 200% 100%;
+    animation: rainbow-text-animation 6s linear infinite;
+  }
+
+  @keyframes rainbow-text-animation {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 200% 50%;
+    }
+  }
 }
