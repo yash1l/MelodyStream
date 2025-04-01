@@ -3,14 +3,7 @@ import { useMusicContext } from "@/context/MusicContext";
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { playlists, createPlaylist } = useMusicContext();
-
-  const handleCreatePlaylist = () => {
-    const name = prompt("Enter playlist name:");
-    if (name) {
-      createPlaylist(name);
-    }
-  };
+  const { playlists } = useMusicContext();
 
   return (
     <aside className="sidebar bg-background-darker fixed h-full z-20 w-[70px] hover:w-[240px] overflow-hidden transition-all duration-300 group border-r border-border/30">
@@ -66,7 +59,6 @@ export default function Sidebar() {
         </nav>
         
         <div className="mt-8 border-t border-accent pt-6">
-          <h3 className="sidebar-text uppercase text-xs font-semibold text-text-secondary mb-4 px-2 opacity-0 transition-opacity">Your Playlists</h3>
           <ul className="space-y-2">
             <li>
               <Link href="/library?playlist=liked">
@@ -76,22 +68,7 @@ export default function Sidebar() {
                 </a>
               </Link>
             </li>
-            {playlists.map(playlist => (
-              <li key={playlist.id}>
-                <Link href={`/library?playlist=${playlist.id}`}>
-                  <a className={`flex items-center px-2 py-2 rounded-md hover:bg-background-lighter ${location === `/library?playlist=${playlist.id}` ? 'bg-background-lighter' : ''}`}>
-                    <i className="ri-album-fill text-xl text-text-secondary group-hover:scale-110 transition-transform hover:text-primary"></i>
-                    <span className="sidebar-text ml-4 text-sm opacity-0 transition-opacity">{playlist.name}</span>
-                  </a>
-                </Link>
-              </li>
-            ))}
           </ul>
-          
-          <button onClick={handleCreatePlaylist} className="flex items-center px-2 py-3 mt-4 rounded-md hover:bg-background-lighter w-full">
-            <i className="ri-add-line text-xl text-text-secondary hover:text-primary group-hover:scale-110 transition-transform"></i>
-            <span className="sidebar-text ml-4 text-sm font-medium opacity-0 transition-opacity">Create Playlist</span>
-          </button>
         </div>
         
         <div className="mt-auto mb-6">
