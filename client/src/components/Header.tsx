@@ -41,15 +41,15 @@ export default function Header() {
         </div>
       </div>
       
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center">
         <button 
           onClick={() => setIsSearchExpanded(!isSearchExpanded)} 
-          className="p-2 md:hidden rounded-full bg-background-lighter text-text-secondary hover:text-text-primary transition-colors"
+          className="mr-4 p-2 md:hidden rounded-full bg-background-lighter text-text-secondary hover:text-text-primary transition-colors"
         >
           <i className="ri-search-line text-xl"></i>
         </button>
         
-        <div className="hidden md:block">
+        <div className="hidden md:block mr-6">
           <ThemeToggle />
         </div>
         
