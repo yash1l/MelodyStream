@@ -1,4 +1,3 @@
-import Header from "@/components/Header";
 import SongCard from "@/components/SongCard";
 import { useMusicContext } from "@/context/MusicContext";
 import { Link } from "wouter";
@@ -8,7 +7,6 @@ export default function Home() {
 
   return (
     <div>
-      <Header />
       
       <div className="px-6 py-4">
         {/* Recently Played Section */}
