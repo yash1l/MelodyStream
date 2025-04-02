@@ -1,13 +1,30 @@
-import type { Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertSongSchema, insertPlaylistSchema, insertArtistSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Global middleware
+  app.use(express.json());
+  
+  // Add CORS headers and proper content type
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    
+    // Pre-flight requests
+    if (req.method === "OPTIONS") {
+      return res.status(200).end();
+    }
+    
+    next();
+  });
   // Songs endpoints
   app.get("/api/songs", async (req, res) => {
     const songs = await storage.getAllSongs();
+    res.setHeader("Content-Type", "application/json");
     res.json(songs);
   });
   
@@ -43,6 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // For demo purposes, get playlists for user ID 1
     const userId = 1;
     const playlists = await storage.getUserPlaylists(userId);
+    res.setHeader("Content-Type", "application/json");
     res.json(playlists);
   });
   
@@ -136,6 +154,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ id: "liked", name: "Liked Songs", songs });
   });
   
+  // Direct API endpoint for liking songs
+  app.post("/api/liked/songs/:songId", async (req, res) => {
+    const songId = parseInt(req.params.songId);
+    
+    if (isNaN(songId)) {
+      return res.status(400).json({ message: "Invalid song ID" });
+    }
+    
+    const song = await storage.getSong(songId);
+    if (!song) {
+      return res.status(404).json({ message: "Song not found" });
+    }
+    
+    // For demo purposes, use user ID 1
+    const userId = 1;
+    await storage.addLikedSong(userId, songId);
+    res.status(204).end();
+  });
+  
+  // Legacy endpoint for backward compatibility
   app.post("/api/playlists/liked/songs/:songId", async (req, res) => {
     const songId = parseInt(req.params.songId);
     
@@ -154,6 +192,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).end();
   });
   
+  // Direct API endpoint for unliking songs
+  app.delete("/api/liked/songs/:songId", async (req, res) => {
+    const songId = parseInt(req.params.songId);
+    
+    if (isNaN(songId)) {
+      return res.status(400).json({ message: "Invalid song ID" });
+    }
+    
+    // For demo purposes, use user ID 1
+    const userId = 1;
+    await storage.removeLikedSong(userId, songId);
+    res.status(204).end();
+  });
+  
+  // Legacy endpoint for backward compatibility
   app.delete("/api/playlists/liked/songs/:songId", async (req, res) => {
     const songId = parseInt(req.params.songId);
     
@@ -170,6 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Artists endpoints
   app.get("/api/artists", async (req, res) => {
     const artists = await storage.getAllArtists();
+    res.setHeader("Content-Type", "application/json");
     res.json(artists);
   });
   
@@ -195,6 +249,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const songs = await storage.getArtistSongs(artistId);
     res.json(songs);
+  });
+
+  // Add error handling middleware
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error("Unhandled error:", err);
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        message: "Internal server error", 
+        error: process.env.NODE_ENV === 'production' ? undefined : err.message 
+      });
+    }
+    next(err);
   });
 
   const httpServer = createServer(app);

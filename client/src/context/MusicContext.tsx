@@ -168,10 +168,10 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       const isLiked = likedSongs.some(song => song.id === songId);
       
       if (isLiked) {
-        await apiRequest('DELETE', `/api/playlists/liked/songs/${songId}`);
+        await apiRequest('DELETE', `/api/liked/songs/${songId}`);
         setLikedSongs(prev => prev.filter(song => song.id !== songId));
       } else {
-        await apiRequest('POST', `/api/playlists/liked/songs/${songId}`);
+        await apiRequest('POST', `/api/liked/songs/${songId}`);
         
         // Find the song in our available songs
         const songToAdd = 
@@ -185,6 +185,30 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Failed to toggle like:", error);
+      
+      // Try with the legacy endpoints as fallback
+      try {
+        const isLiked = likedSongs.some(song => song.id === songId);
+        
+        if (isLiked) {
+          await apiRequest('DELETE', `/api/playlists/liked/songs/${songId}`);
+          setLikedSongs(prev => prev.filter(song => song.id !== songId));
+        } else {
+          await apiRequest('POST', `/api/playlists/liked/songs/${songId}`);
+          
+          // Find the song
+          const songToAdd = 
+            currentSong?.id === songId ? currentSong : 
+            recentlyPlayed.find(s => s.id === songId) || 
+            topSongs.find(s => s.id === songId);
+            
+          if (songToAdd) {
+            setLikedSongs(prev => [...prev, songToAdd]);
+          }
+        }
+      } catch (fallbackError) {
+        console.error("Failed to toggle like (fallback):", fallbackError);
+      }
     }
   };
 

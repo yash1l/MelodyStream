@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/Sidebar";
 import MiniPlayer from "@/components/MiniPlayer";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import Header from "./components/Header";
 import Home from "@/pages/Home";
 import Library from "@/pages/Library";
 import Search from "@/pages/Search";
@@ -19,7 +19,7 @@ function Router() {
     <div className="flex h-screen bg-background text-foreground">
       <Sidebar />
       <div className="flex-1 ml-[80px] pb-20 overflow-y-auto px-4">
-        <ThemeToggle />
+        <Header />
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/library" component={Library} />
