@@ -1,12 +1,14 @@
 import SongCard from "@/components/SongCard";
 import { useMusicContext } from "@/context/MusicContext";
 import { Link } from "wouter";
+import Header from "@/components/Header";
 
 export default function Home() {
   const { recentlyPlayed, topSongs, featuredArtists } = useMusicContext();
 
   return (
     <div>
+      <Header />
       
       <div className="px-6 py-4">
         {/* Recently Played Section */}
