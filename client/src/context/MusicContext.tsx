@@ -16,7 +16,7 @@ interface MusicContextType {
   recentlyPlayed: Song[];
   topSongs: Song[];
   featuredArtists: Artist[];
-  playSong: (song: Song) => void;
+  playSong: (song: Song, playlistSongs?: Song[]) => void;
   pauseSong: () => void;
   nextSong: () => void;
   prevSong: () => void;
@@ -26,8 +26,10 @@ interface MusicContextType {
   setProgress: (value: number) => void;
   toggleLike: (songId: number) => void;
   createPlaylist: (name: string) => Promise<void>;
+  deletePlaylist: (playlistId: number) => Promise<void>;
   addToPlaylist: (songId: number, playlistId: number) => Promise<void>;
   removeFromPlaylist: (songId: number, playlistId: number) => Promise<void>;
+  updatePlaylistOrder: (playlistId: number, songIds: number[]) => Promise<void>;
 }
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
@@ -106,7 +108,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     loadData();
   }, []);
 
-  const playSong = (song: Song) => {
+  const playSong = (song: Song, playlistSongs?: Song[]) => {
     setCurrentSong(song);
     setIsPlaying(true);
     setDuration(song.duration);
@@ -116,6 +118,17 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       const filtered = prev.filter(s => s.id !== song.id);
       return [song, ...filtered].slice(0, 6);
     });
+    
+    // If the song is from a playlist, add the rest of the playlist to the queue
+    if (playlistSongs && playlistSongs.length > 1) {
+      // Find the current song's index in the playlist
+      const songIndex = playlistSongs.findIndex(s => s.id === song.id);
+      if (songIndex !== -1 && songIndex < playlistSongs.length - 1) {
+        // Add all songs after the current one to the queue
+        const songsToQueue = playlistSongs.slice(songIndex + 1);
+        setQueue(songsToQueue);
+      }
+    }
   };
 
   const pauseSong = () => {
@@ -270,6 +283,47 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deletePlaylist = async (playlistId: number) => {
+    try {
+      await apiRequest('DELETE', `/api/playlists/${playlistId}`);
+      // Remove playlist from state
+      setPlaylists(prev => prev.filter(playlist => playlist.id !== playlistId));
+    } catch (error) {
+      console.error("Failed to delete playlist:", error);
+    }
+  };
+  
+  const updatePlaylistOrder = async (playlistId: number, songIds: number[]) => {
+    try {
+      // API call to update order would go here in a real implementation
+      // For now, we'll just update the state to simulate the change
+      await apiRequest('PATCH', `/api/playlists/${playlistId}/order`, { songIds });
+      
+      // Update playlist in state with the new order
+      setPlaylists(prev => 
+        prev.map(playlist => {
+          if (playlist.id === playlistId && playlist.songs) {
+            // Create a map of songs by ID for quick lookup
+            const songsMap = new Map(playlist.songs.map(song => [song.id, song]));
+            
+            // Create a new array of songs in the correct order
+            const orderedSongs = songIds
+              .map(id => songsMap.get(id))
+              .filter(song => song !== undefined) as Song[];
+            
+            return {
+              ...playlist,
+              songs: orderedSongs
+            };
+          }
+          return playlist;
+        })
+      );
+    } catch (error) {
+      console.error("Failed to update playlist order:", error);
+    }
+  };
+
   const value = {
     currentSong,
     isPlaying,
@@ -294,8 +348,10 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     setProgress,
     toggleLike,
     createPlaylist,
+    deletePlaylist,
     addToPlaylist,
-    removeFromPlaylist
+    removeFromPlaylist,
+    updatePlaylistOrder
   };
 
   return (

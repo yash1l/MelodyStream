@@ -15,7 +15,8 @@ export default function MiniPlayer() {
     setVolume,
     setProgress,
     toggleLike,
-    likedSongs
+    likedSongs,
+    queue
   } = useMusicContext();
   
   const [showQueue, setShowQueue] = useState(false);
@@ -50,9 +51,20 @@ export default function MiniPlayer() {
     if (!audioRef.current) return;
     
     if (currentSong) {
-      audioRef.current.src = currentSong.url;
+      // Fix URL construction for audio source
+      const audioUrl = currentSong.url || `/api/songs/${currentSong.id}.mp3`;
+      audioRef.current.src = audioUrl;
+      
       if (isPlaying) {
-        audioRef.current.play().catch(error => console.error("Error playing audio:", error));
+        audioRef.current.play()
+          .catch(error => {
+            console.error("Error playing audio:", error);
+            // Try alternative URL if initial URL fails
+            if (currentSong.url && audioRef.current) {
+              audioRef.current.src = `/api/songs/${currentSong.id}.mp3`;
+              audioRef.current.play().catch(error => console.error("Error playing audio with fallback:", error));
+            }
+          });
       }
     }
   }, [currentSong]);
@@ -156,9 +168,9 @@ export default function MiniPlayer() {
           </div>
           <button 
             onClick={() => currentSong && toggleLike(currentSong.id)} 
-            className="text-text-secondary hover:text-primary hidden md:block"
+            className={`${isLiked ? 'text-primary' : 'text-text-secondary hover:text-primary'} hidden md:block`}
           >
-            <i className={`${isLiked ? 'ri-heart-fill text-primary' : 'ri-heart-line'} text-lg`}></i>
+            <i className={`${isLiked ? 'ri-heart-fill' : 'ri-heart-line'} text-lg`}></i>
           </button>
         </div>
         
@@ -247,7 +259,7 @@ export default function MiniPlayer() {
         <div className="absolute bottom-20 right-0 w-72 bg-background-darker border border-accent rounded-t-md shadow-lg p-4">
           <h3 className="text-lg font-bold mb-2">Queue</h3>
           <ul className="max-h-96 overflow-y-auto">
-            {/* No songs in queue message */}
+            {/* Now Playing */}
             {currentSong && (
               <li className="py-2 border-b border-accent/20">
                 <div className="text-sm font-medium">Now Playing</div>
@@ -261,6 +273,37 @@ export default function MiniPlayer() {
                   </div>
                 </div>
               </li>
+            )}
+            
+            {/* Queue items */}
+            {queue.length > 0 ? (
+              <>
+                <div className="text-sm font-medium mt-3 mb-1">Next in Queue</div>
+                {queue.map((song, index) => (
+                  <li key={`${song.id}-${index}`} className="py-2 border-b border-accent/10 last:border-0">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 mr-3 bg-background-lighter rounded">
+                        {song.imageUrl ? (
+                          <img src={song.imageUrl} alt={song.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-background-lighter">
+                            <i className="ri-music-2-line text-text-secondary"></i>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-sm">{song.title}</div>
+                        <div className="text-xs text-text-secondary">{song.artist}</div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </>
+            ) : (
+              <div className="py-4 text-center text-text-secondary">
+                <i className="ri-music-2-line text-2xl mb-2"></i>
+                <p className="text-sm">Your queue is empty</p>
+              </div>
             )}
           </ul>
         </div>

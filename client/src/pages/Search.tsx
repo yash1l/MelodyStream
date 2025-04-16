@@ -6,7 +6,7 @@ import { useLocation } from "wouter";
 import { Song, Artist } from "@shared/schema";
 
 export default function Search() {
-  const { topSongs, featuredArtists, songsByArtist } = useMusicContext();
+  const { topSongs, featuredArtists, songsByArtist, isLoaded } = useMusicContext();
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{
@@ -15,7 +15,58 @@ export default function Search() {
   }>({ songs: [], artists: [] });
   const [isSearching, setIsSearching] = useState(false);
   
-  // Parse query from URL
+  // Perform search based on query
+  const performSearch = async (query: string) => {
+    setIsSearching(true);
+    
+    try {
+      // Make sure we have data loaded before searching
+      if (!isLoaded) {
+        // Delay search until data is loaded
+        setTimeout(() => performSearch(query), 500);
+        return;
+      }
+      
+      // Get all available songs for searching (not just top songs)
+      const allSongs: Song[] = [];
+      
+      // Add top songs
+      allSongs.push(...topSongs);
+      
+      // Add songs from artists
+      Object.values(songsByArtist).forEach(artistSongs => {
+        allSongs.push(...artistSongs.filter(s => 
+          !allSongs.some(existing => existing.id === s.id)
+        ));
+      });
+      
+      // Filter songs based on query
+      const filteredSongs = allSongs.filter(song => 
+        song.title.toLowerCase().includes(query.toLowerCase()) ||
+        song.artist.toLowerCase().includes(query.toLowerCase()) ||
+        (song.album && song.album.toLowerCase().includes(query.toLowerCase()))
+      );
+      
+      // Filter artists based on query
+      const filteredArtists = featuredArtists.filter(artist => 
+        artist.name.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      // Update search results
+      setSearchResults({
+        songs: filteredSongs,
+        artists: filteredArtists
+      });
+      
+      console.log("Search results:", filteredSongs.length, "songs,", filteredArtists.length, "artists");
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  // Parse query from URL and perform search
   useEffect(() => {
     const params = new URLSearchParams(location.split('?')[1]);
     const query = params.get('q');
@@ -27,35 +78,7 @@ export default function Search() {
       setSearchResults({ songs: [], artists: [] });
       setIsSearching(false);
     }
-  }, [location]);
-  
-  // Perform search based on query
-  const performSearch = async (query: string) => {
-    setIsSearching(true);
-    
-    try {
-      // Search functionality would ideally call a backend API
-      // For now, we'll filter the existing data
-      const filteredSongs = topSongs.filter(song => 
-        song.title.toLowerCase().includes(query.toLowerCase()) ||
-        song.artist.toLowerCase().includes(query.toLowerCase()) ||
-        (song.album && song.album.toLowerCase().includes(query.toLowerCase()))
-      );
-      
-      const filteredArtists = featuredArtists.filter(artist => 
-        artist.name.toLowerCase().includes(query.toLowerCase())
-      );
-      
-      setSearchResults({
-        songs: filteredSongs,
-        artists: filteredArtists
-      });
-    } catch (error) {
-      console.error("Search error:", error);
-    } finally {
-      setIsSearching(false);
-    }
-  };
+  }, [location, isLoaded]);
   
   return (
     <div>
@@ -80,15 +103,32 @@ export default function Search() {
                   <section className="mb-8">
                     <h3 className="text-xl font-semibold mb-4">Artists</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                      {searchResults.artists.map(artist => (
-                        <div key={artist.id} className="bg-background-card p-4 rounded-lg hover:bg-background-card/80 transition-all cursor-pointer">
-                          <div className="aspect-square mb-4 rounded-full overflow-hidden">
-                            <img src={artist.imageUrl} alt={artist.name} className="w-full h-full object-cover" />
+                      {searchResults.artists.map(artist => {
+                        const artistSongs = songsByArtist[artist.id] || [];
+                        
+                        return (
+                          <div 
+                            key={artist.id}
+                            onClick={() => {
+                              if (artistSongs.length > 0) {
+                                // Show artist page with songs
+                                const artistPageUrl = `/artist?id=${artist.id}`;
+                                window.location.href = artistPageUrl;
+                              }
+                            }} 
+                            className={`bg-background-card p-4 rounded-lg hover:bg-background-card/80 transition-all ${artistSongs.length > 0 ? 'cursor-pointer' : 'cursor-default'}`}
+                          >
+                            <div className="aspect-square mb-4 rounded-full overflow-hidden">
+                              <img src={artist.imageUrl} alt={artist.name} className="w-full h-full object-cover" />
+                            </div>
+                            <h4 className="text-center text-base font-semibold">{artist.name}</h4>
+                            <p className="text-center text-sm text-text-secondary">
+                              Artist
+                              {artistSongs.length > 0 && ` • ${artistSongs.length} songs`}
+                            </p>
                           </div>
-                          <h4 className="text-center text-base font-semibold">{artist.name}</h4>
-                          <p className="text-center text-sm text-text-secondary">Artist</p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </section>
                 )}
@@ -160,15 +200,32 @@ export default function Search() {
             <section className="mb-8">
               <h3 className="text-xl font-semibold mb-4">Popular Artists</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-                {featuredArtists.map(artist => (
-                  <div key={artist.id} className="bg-background-card p-4 rounded-lg hover:bg-background-card/80 transition-all cursor-pointer">
-                    <div className="aspect-square mb-4 rounded-full overflow-hidden">
-                      <img src={artist.imageUrl} alt={artist.name} className="w-full h-full object-cover" />
+                {featuredArtists.map(artist => {
+                  const artistSongs = songsByArtist[artist.id] || [];
+                  
+                  return (
+                    <div 
+                      key={artist.id}
+                      onClick={() => {
+                        if (artistSongs.length > 0) {
+                          // Show artist page with songs
+                          const artistPageUrl = `/artist?id=${artist.id}`;
+                          window.location.href = artistPageUrl;
+                        }
+                      }} 
+                      className={`bg-background-card p-4 rounded-lg hover:bg-background-card/80 transition-all ${artistSongs.length > 0 ? 'cursor-pointer' : 'cursor-default'}`}
+                    >
+                      <div className="aspect-square mb-4 rounded-full overflow-hidden">
+                        <img src={artist.imageUrl} alt={artist.name} className="w-full h-full object-cover" />
+                      </div>
+                      <h4 className="text-center text-base font-semibold">{artist.name}</h4>
+                      <p className="text-center text-sm text-text-secondary">
+                        Artist
+                        {artistSongs.length > 0 && ` • ${artistSongs.length} songs`}
+                      </p>
                     </div>
-                    <h4 className="text-center text-base font-semibold">{artist.name}</h4>
-                    <p className="text-center text-sm text-text-secondary">Artist</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
             

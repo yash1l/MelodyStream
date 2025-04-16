@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { ThemeToggle } from "./ThemeToggle";
 
 export default function Header() {
@@ -12,8 +12,20 @@ export default function Header() {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setIsSearchExpanded(false); // Hide the mobile search box after submission
     }
   };
+  
+  // Check if we're already on the search page and extract the query
+  useEffect(() => {
+    if (location.startsWith('/search')) {
+      const params = new URLSearchParams(location.split('?')[1]);
+      const query = params.get('q');
+      if (query) {
+        setSearchQuery(query);
+      }
+    }
+  }, [location]);
   
   return (
     <header className="sticky top-0 bg-background-dark/90 backdrop-blur-md z-10 px-6 py-4 flex justify-between items-center">
@@ -53,11 +65,12 @@ export default function Header() {
           <ThemeToggle />
         </div>
         
-        <Link href="/profile">
-          <a className="h-9 w-9 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors">
-            <i className="ri-user-fill text-lg"></i>
-          </a>
-        </Link>
+        <div 
+          onClick={() => navigate("/profile")}
+          className="h-9 w-9 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors"
+        >
+          <i className="ri-user-fill text-lg"></i>
+        </div>
       </div>
     </header>
   );

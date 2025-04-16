@@ -1,10 +1,11 @@
 import SongCard from "@/components/SongCard";
 import { useMusicContext } from "@/context/MusicContext";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import Header from "@/components/Header";
 
 export default function Home() {
   const { recentlyPlayed, topSongs, featuredArtists } = useMusicContext();
+  const [, navigate] = useLocation();
 
   return (
     <div>
@@ -26,7 +27,11 @@ export default function Home() {
           <h2 className="text-2xl font-bold mb-6">Featured Artists</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
             {featuredArtists.map((artist) => (
-              <div key={artist.id} className="bg-background-card p-4 rounded-lg hover:bg-background-card/80 transition-all cursor-pointer">
+              <div 
+                key={artist.id} 
+                className="bg-background-card p-4 rounded-lg hover:bg-background-card/80 transition-all cursor-pointer"
+                onClick={() => navigate(`/artist?id=${artist.id}`)}
+              >
                 <div className="aspect-square mb-4 rounded-full overflow-hidden">
                   <img src={artist.imageUrl} alt={artist.name} className="w-full h-full object-cover" />
                 </div>
@@ -41,9 +46,12 @@ export default function Home() {
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Today's Top Hits</h2>
-            <Link href="/search?category=top">
-              <a className="text-sm text-text-secondary hover:text-primary">See All</a>
-            </Link>
+            <span 
+              onClick={() => window.location.href = '/search?category=top'} 
+              className="text-sm text-text-secondary hover:text-primary cursor-pointer"
+            >
+              See All
+            </span>
           </div>
           
           <div className="bg-background-card rounded-lg overflow-hidden">

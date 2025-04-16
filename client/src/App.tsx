@@ -11,6 +11,7 @@ import Search from "@/pages/Search";
 import About from "@/pages/About";
 import Notifications from "@/pages/Notifications";
 import Profile from "@/pages/Profile";
+import Artist from "@/pages/Artist";
 import { useMusicContext } from "@/context/MusicContext";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
           <Route path="/about" component={About} />
           <Route path="/notifications" component={Notifications} />
           <Route path="/profile" component={Profile} />
+          <Route path="/artist" component={Artist} />
           <Route component={NotFound} />
         </Switch>
       </div>

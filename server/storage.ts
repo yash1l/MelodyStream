@@ -22,6 +22,7 @@ export interface IStorage {
   getPlaylist(id: number): Promise<Playlist | undefined>;
   getUserPlaylists(userId: number): Promise<Playlist[]>;
   createPlaylist(playlist: InsertPlaylist): Promise<Playlist>;
+  deletePlaylist(id: number): Promise<void>;
   addSongToPlaylist(playlistId: number, songId: number): Promise<void>;
   removeSongFromPlaylist(playlistId: number, songId: number): Promise<void>;
   getPlaylistSongs(playlistId: number): Promise<Song[]>;
@@ -72,20 +73,18 @@ export class MemStorage implements IStorage {
     this.playlistId = 1;
     this.artistId = 1;
     
-    // Initialize with demo data
     this.initializeDemoData();
   }
   
-  // Initialize demo data
   private initializeDemoData(): void {
     // Create demo artists
     const artists = [
-      { name: "Taylor Swift", imageUrl: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=500&h=500&fit=crop&auto=format" },
-      { name: "Drake", imageUrl: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&h=500&fit=crop&auto=format" },
-      { name: "Billie Eilish", imageUrl: "https://images.unsplash.com/photo-1534126511673-b6899657816a?w=500&h=500&fit=crop&auto=format" },
-      { name: "The Weeknd", imageUrl: "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=500&h=500&fit=crop&auto=format" },
-      { name: "Dua Lipa", imageUrl: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=500&h=500&fit=crop&auto=format" },
-      { name: "Kendrick Lamar", imageUrl: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&h=500&fit=crop&auto=format" }
+      { name: "ODESZA", imageUrl: "/images/artists/odesza.jpg" },
+      { name: "M83", imageUrl: "/images/artists/m83.jpg" },
+      { name: "Fleetwood Mac", imageUrl: "/images/artists/fleetwood-mac.jpg" },
+      { name: "The Weeknd", imageUrl: "/images/artists/weeknd.jpg" },
+      { name: "Dua Lipa", imageUrl: "/images/artists/dua-lipa.jpg" },
+      { name: "Kendrick Lamar", imageUrl: "/images/artists/kendrick-lamar.jpg" }
     ];
     
     artists.forEach(artist => {
@@ -100,8 +99,8 @@ export class MemStorage implements IStorage {
         artistId: 1, 
         album: "A Moment Apart", 
         duration: 227, 
-        url: "/api/songs/1.mp3", 
-        imageUrl: "https://images.unsplash.com/photo-1553524913-efba3f0b533e?w=500&h=500&fit=crop&auto=format" 
+        url: "/songs/higher-ground.mp3",
+        imageUrl: "/images/albums/higher-ground.jpg"
       },
       { 
         title: "Midnight City", 
@@ -109,17 +108,8 @@ export class MemStorage implements IStorage {
         artistId: 2, 
         album: "Hurry Up, We're Dreaming", 
         duration: 243, 
-        url: "/api/songs/2.mp3", 
-        imageUrl: "https://images.unsplash.com/photo-1496293455970-f8581aae0e3b?w=500&h=500&fit=crop&auto=format" 
-      },
-      { 
-        title: "Blinding Lights", 
-        artist: "The Weeknd", 
-        artistId: 4, 
-        album: "After Hours", 
-        duration: 202, 
-        url: "/api/songs/3.mp3", 
-        imageUrl: "https://images.unsplash.com/photo-1561211957-7540a3deb471?w=500&h=500&fit=crop&auto=format" 
+        url: "/songs/midnight-city.mp3",
+        imageUrl: "/images/albums/midnight-city.jpg"
       },
       { 
         title: "Dreams", 
@@ -127,8 +117,17 @@ export class MemStorage implements IStorage {
         artistId: 3, 
         album: "Rumours", 
         duration: 254, 
-        url: "/api/songs/4.mp3", 
-        imageUrl: "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=500&h=500&fit=crop&auto=format" 
+        url: "/songs/dreams.mp3",
+        imageUrl: "/images/albums/dreams.jpg"
+      },
+      { 
+        title: "Blinding Lights", 
+        artist: "The Weeknd", 
+        artistId: 4, 
+        album: "After Hours", 
+        duration: 202, 
+        url: "/songs/blinding-lights.mp3",
+        imageUrl: "/images/albums/blinding-lights.jpg"
       },
       { 
         title: "Levitating", 
@@ -136,17 +135,17 @@ export class MemStorage implements IStorage {
         artistId: 5, 
         album: "Future Nostalgia", 
         duration: 203, 
-        url: "/api/songs/5.mp3", 
-        imageUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&h=500&fit=crop&auto=format" 
+        url: "/songs/levitating.mp3",
+        imageUrl: "/images/albums/levitating.jpg"
       },
       { 
         title: "Starboy", 
-        artist: "The Weeknd, Daft Punk", 
+        artist: "The Weeknd", 
         artistId: 4, 
         album: "Starboy", 
         duration: 230, 
-        url: "/api/songs/6.mp3", 
-        imageUrl: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=500&h=500&fit=crop&auto=format" 
+        url: "/songs/starboy.mp3",
+        imageUrl: "/images/albums/starboy.jpg"
       }
     ];
     
@@ -159,9 +158,21 @@ export class MemStorage implements IStorage {
     
     // Create demo playlists
     const playlists = [
-      { name: "Workout Mix", userId: 1, imageUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&h=500&fit=crop&auto=format" },
-      { name: "Chill Vibes", userId: 1, imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&auto=format" },
-      { name: "Focus Beats", userId: 1, imageUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&h=500&fit=crop&auto=format" }
+      { 
+        name: "Workout Mix", 
+        userId: 1, 
+        imageUrl: "/images/playlists/workout.jpg"
+      },
+      { 
+        name: "Chill Vibes", 
+        userId: 1, 
+        imageUrl: "/images/playlists/chill.jpg"
+      },
+      { 
+        name: "Focus Beats", 
+        userId: 1, 
+        imageUrl: "/images/playlists/focus.jpg"
+      }
     ];
     
     playlists.forEach(playlist => {
@@ -169,32 +180,25 @@ export class MemStorage implements IStorage {
     });
     
     // Add songs to playlists
-    this.addSongToPlaylist(1, 1);
-    this.addSongToPlaylist(1, 5);
-    this.addSongToPlaylist(2, 2);
-    this.addSongToPlaylist(2, 4);
-    this.addSongToPlaylist(3, 1);
-    this.addSongToPlaylist(3, 3);
+    this.addSongToPlaylist(1, 1); // Higher Ground to Workout Mix
+    this.addSongToPlaylist(1, 5); // Levitating to Workout Mix
+    this.addSongToPlaylist(2, 2); // Midnight City to Chill Vibes
+    this.addSongToPlaylist(2, 3); // Dreams to Chill Vibes
+    this.addSongToPlaylist(3, 4); // Blinding Lights to Focus Beats
+    this.addSongToPlaylist(3, 6); // Starboy to Focus Beats
+    
+    // Add some liked songs
+    this.addLikedSong(1, 3); // Dreams
+    this.addLikedSong(1, 4); // Blinding Lights
+  }
+
+(3, 3);
     
     // Add liked songs
     this.addLikedSong(1, 3);
   }
   
-  // User methods
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-  
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-  
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+users.set(id, user);
     this.likedSongs.set(id, new Set());
     return user;
   }
@@ -210,9 +214,13 @@ export class MemStorage implements IStorage {
   
   async createSong(insertSong: InsertSong): Promise<Song> {
     const id = this.songId++;
+    // Ensure album is set to null if undefined
+    const album = insertSong.album === undefined ? null : insertSong.album;
+    
     const song: Song = { 
       ...insertSong, 
       id,
+      album,
       createdAt: new Date(),
       durationFormatted: formatDuration(insertSong.duration)
     };
@@ -244,14 +252,26 @@ export class MemStorage implements IStorage {
   
   async createPlaylist(insertPlaylist: InsertPlaylist): Promise<Playlist> {
     const id = this.playlistId++;
+    // Ensure imageUrl is set to null if undefined
+    const imageUrl = insertPlaylist.imageUrl === undefined ? null : insertPlaylist.imageUrl;
+    
     const playlist: Playlist = { 
       ...insertPlaylist, 
       id,
+      imageUrl,
       createdAt: new Date()
     };
     this.playlists.set(id, playlist);
     this.playlistSongs.set(id, new Set());
     return playlist;
+  }
+  
+  async deletePlaylist(id: number): Promise<void> {
+    // Remove the playlist
+    this.playlists.delete(id);
+    
+    // Remove all songs from the playlist
+    this.playlistSongs.delete(id);
   }
   
   async addSongToPlaylist(playlistId: number, songId: number): Promise<void> {
@@ -273,12 +293,13 @@ export class MemStorage implements IStorage {
     if (!songSet) return [];
     
     const songs: Song[] = [];
-    for (const songId of songSet) {
+    // Use Array.from to convert Set to array for iteration
+    Array.from(songSet).forEach(songId => {
       const song = this.songs.get(songId);
       if (song) {
         songs.push(song);
       }
-    }
+    });
     
     return songs;
   }
@@ -289,12 +310,13 @@ export class MemStorage implements IStorage {
     if (!likedSet) return [];
     
     const songs: Song[] = [];
-    for (const songId of likedSet) {
+    // Use Array.from to convert Set to array for iteration
+    Array.from(likedSet).forEach(songId => {
       const song = this.songs.get(songId);
       if (song) {
         songs.push(song);
       }
-    }
+    });
     
     return songs;
   }
